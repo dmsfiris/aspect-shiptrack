@@ -1,17 +1,25 @@
 # aspect-shiptrack
 
 A **multi-carrier shipment tracking web application** built with Next.js 14, Tailwind CSS, and the ShipEngine API.  
-This app allows users to enter a tracking number and see the shipment’s current status and history in a clean timeline view.
+This app allows users to enter a tracking number and see the shipment’s current status and history in a clean, modern timeline view.
 
 ---
 
 ## Features
 
-- **Multi-carrier tracking** via ShipEngine API (FedEx, UPS, DHL, USPS, and more)
-- **Timeline of shipment events** (pickup, transit, delivery)
-- **Recent lookups** stored locally (up to 5 previous tracking numbers)
-- Responsive UI built with **Next.js App Router + Tailwind**
-- Secure API route that keeps **API keys on the server-side**
+- **Multi-carrier tracking** via ShipEngine API  
+  Supports UPS, FedEx, DHL, USPS and more (auto-detected by ShipEngine).
+- **Mock or Live Data Modes**  
+  - **Mock Mode:** Instant demo with sample tracking data, no API key required.  
+  - **Live Mode:** Real data from ShipEngine when a valid API key is provided.
+- **Interactive Timeline**  
+  Displays key shipment events (pickup, in transit, delivery) as a vertical timeline with icons.
+- **Recent Lookups**  
+  Stores up to 5 previously tracked numbers locally for quick access.
+- **Responsive UI**  
+  Clean and modern design built with Next.js App Router and Tailwind CSS.
+- **Secure API Route**  
+  All API calls are proxied through a serverless route so that your API key stays on the server.
 
 ---
 
@@ -21,6 +29,28 @@ This app allows users to enter a tracking number and see the shipment’s curren
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [ShipEngine API](https://www.shipengine.com/docs/)
+
+---
+
+## Modes
+
+You can run the app in **two different modes**:
+
+- **Mock Mode (Default for Demo)**
+  - Uses pre-defined sample tracking data.
+  - No API key required.
+- **Live API Mode**
+  - Calls the real ShipEngine API using your API key.
+  - Returns real-time tracking updates from supported carriers.
+
+Controlled by the `NEXT_PUBLIC_USE_MOCK_DATA` environment variable:
+
+```
+# .env.local
+NEXT_PUBLIC_USE_MOCK_DATA=true   # Mock/demo mode
+NEXT_PUBLIC_USE_MOCK_DATA=false  # Real ShipEngine API
+SHIPENGINE_API_KEY=your_shipengine_api_key_here
+```
 
 ---
 
@@ -41,10 +71,10 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a `.env.local` file in the project root:
+Copy `.env.local.example` to `.env.local` and edit as needed:
 
-```
-SHIPENGINE_API_KEY=your_shipengine_api_key_here
+```bash
+cp .env.local.example .env.local
 ```
 
 > Do not commit `.env.local`. Only `.env.local.example` is tracked.
@@ -57,7 +87,7 @@ SHIPENGINE_API_KEY=your_shipengine_api_key_here
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -73,9 +103,9 @@ src/
   components/
     TrackerForm.tsx
     TrackingResult.tsx
-    TimelineItem.tsx
+    RecentLookups.tsx
   lib/
-    shipengine.ts   # Helper to call ShipEngine API
+    mockData.ts     # Sample data for mock mode
 ```
 
 ---
@@ -84,26 +114,28 @@ src/
 
 - The ShipEngine API key is stored **only in server-side environment variables**.
 - `.env.local` is in `.gitignore` and never pushed to GitHub.
-- A `.env.local.example` file documents required variables.
+- `.env.local.example` documents the required variables for other developers.
 
 ---
 
 ## Deployment
 
-Easily deploy with [Vercel](https://vercel.com/):
+Deploy in minutes using [Vercel](https://vercel.com/):
 
 1. Push this repo to GitHub.
 2. Import it into Vercel.
-3. Add `SHIPENGINE_API_KEY` in Vercel project settings.
+3. Configure your environment variables (`NEXT_PUBLIC_USE_MOCK_DATA` and `SHIPENGINE_API_KEY`) in Vercel settings.
 4. Deploy.
+
+> When `NEXT_PUBLIC_USE_MOCK_DATA=false` and a valid key is set, the deployed app will use **real carrier tracking data**.
 
 ---
 
 ## Roadmap
 
-- Add carrier auto-detection
-- Add delivery estimates (if API provides)
-- Show map for package checkpoints
+- Display package checkpoints on an interactive map.
+- Enhanced error messages for failed tracking lookups.
+- Optional authentication for personal dashboards.
 
 ---
 

@@ -6,6 +6,7 @@ import RecentLookups from "./RecentLookups";
 import { mockTrackingData } from "@/lib/mockData";
 
 const STORAGE_KEY = "recent_trackings";
+const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true";
 
 export default function TrackerForm() {
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -26,27 +27,73 @@ export default function TrackerForm() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!trackingNumber.trim()) return;
+  async function fetchTrackingData(tracking: string) {
     setLoading(true);
     setError(null);
     setResult(null);
 
-    await new Promise((res) => setTimeout(res, 1000)); // Simulate delay
-    setResult(mockTrackingData);
+    try {
+      if (useMockData) {
+        // Demo mode – use mock data
+        await new Promise((res) => setTimeout(res, 500));
+        setResult(mockTrackingData);
+        saveRecent(tracking);
+        return;
+      }
 
-    saveRecent(trackingNumber);
-    setLoading(false);
+      const res = await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackingNumber: tracking }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(
+          data.error || "Failed to fetch tracking data. Try again later."
+        );
+      }
+
+      // Normalize data (same structure for both API and mock)
+      setResult({
+        tracking_number: data.tracking_number,
+        status_description: data.status_description,
+        estimated_delivery_date: data.estimated_delivery_date,
+        events: (data.events || []).map((e: any) => ({
+          occurred_at: e.occurred_at,
+          description: e.description,
+          city_locality: e.city_locality,
+          state_province: e.state_province,
+        })),
+      });
+
+      saveRecent(tracking);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!trackingNumber.trim()) return;
+    fetchTrackingData(trackingNumber.trim());
   }
 
   function handleSelectRecent(number: string) {
     setTrackingNumber(number);
-    setResult(mockTrackingData); // Use same mock data for now
+    fetchTrackingData(number);
   }
 
   return (
-    <div className="max-w-lg mx-auto p-4">
+    <div className="max-w-xl mx-auto mt-8 bg-white shadow-lg rounded-xl p-6">
+      {useMockData && (
+        <div className="mb-4 rounded bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 text-sm">
+          Mock Mode Active – data is simulated, not live.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
@@ -57,7 +104,7 @@ export default function TrackerForm() {
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Track
         </button>

@@ -3,29 +3,9 @@
 import { useState, useEffect } from "react";
 import TrackingResult from "./TrackingResult";
 import RecentLookups from "./RecentLookups";
+import { mockTrackingData } from "@/lib/mockData";
 
 const STORAGE_KEY = "recent_trackings";
-
-// Temporary mock data for UI development
-const mockData = {
-  tracking_number: "1Z12345E0291980793",
-  status_description: "In Transit",
-  estimated_delivery_date: "2025-08-01T00:00:00Z",
-  events: [
-    {
-      occurred_at: "2025-07-22T12:00:00Z",
-      description: "Package arrived at regional facility",
-      city_locality: "Memphis",
-      state_province: "TN",
-    },
-    {
-      occurred_at: "2025-07-20T08:30:00Z",
-      description: "Package picked up",
-      city_locality: "Nashville",
-      state_province: "TN",
-    },
-  ],
-};
 
 export default function TrackerForm() {
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -54,7 +34,7 @@ export default function TrackerForm() {
     setResult(null);
 
     await new Promise((res) => setTimeout(res, 1000)); // Simulate delay
-    setResult(mockData);
+    setResult(mockTrackingData);
 
     saveRecent(trackingNumber);
     setLoading(false);
@@ -62,7 +42,7 @@ export default function TrackerForm() {
 
   function handleSelectRecent(number: string) {
     setTrackingNumber(number);
-    setResult(mockData); // You can also re-fetch here if using real API
+    setResult(mockTrackingData); // Use same mock data for now
   }
 
   return (
